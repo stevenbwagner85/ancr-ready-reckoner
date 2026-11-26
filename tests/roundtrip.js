@@ -7,19 +7,20 @@ var s = ANCR.emptyState();
 s.meta = { title: 'Test assessment & "quotes" <tags>', analyst: 'Test team', date: '26 November 2026', marking: 'OFFICIAL' };
 s.kjs = [ANCR.emptyKJ(), ANCR.emptyKJ(), ANCR.emptyKJ()];
 s.kjs[0].statement = 'It is HIGHLY LIKELY that X will happen.\nSecond line with unicode: café – £100 😀';
-s.kjs[0].scores = { '1a': 0, '1b': 50, '1c': 70, '1d': 40, c1: 30, '2a': 80, '2b': 80, '2c': 50, c2: 60, '3a': 10, '3b': 30, c3: 20, overall: 100 };
+s.kjs[0].scores = { '1a': 'Low', '1b': 'Moderate', '1c': 'High', '1d': 'Moderate', c1: 'Low', '2a': 'High', '2b': 'High', '2c': 'Moderate', c2: 'Moderate', '3a': 'Low', '3b': null, c3: 'Low', overall: 'High' };
 s.kjs[0].notes['1a'] = 'Gaps in coverage of <ports> & shipping';
 s.kjs[0].notes.overall = 'Line one\nLine two';
 s.kjs[0].ancr = 'We have HIGH confidence...';
 s.kjs[2].statement = 'Third judgement';
-s.kjs[2].scores['2c'] = 90;
+s.kjs[2].scores['2c'] = 'High';
 s = ANCR.normState(s);
 
-eq(ANCR.band(0), 'Low', 'band 0'); eq(ANCR.band(30), 'Low', 'band 30'); eq(ANCR.band(40), 'Moderate', 'band 40');
-eq(ANCR.band(60), 'Moderate', 'band 60'); eq(ANCR.band(70), 'High', 'band 70'); eq(ANCR.band(null), '', 'band null');
-eq(ANCR.strongest(s.kjs[0]), 'Argumentation (80); Assumptions (80)', 'strongest');
-eq(ANCR.weakest(s.kjs[0]), 'Coverage (0)', 'weakest');
-eq(ANCR.strongest(ANCR.emptyKJ()), '', 'strongest of nothing');
+eq(ANCR.normScore('high'), 'High', 'rating is case-insensitive'); eq(ANCR.normScore('Medium'), 'Moderate', 'medium reads as Moderate');
+eq(ANCR.normScore(''), null, 'blank is no rating'); eq(ANCR.normScore('maybe'), null, 'unknown text is no rating');
+eq(ANCR.normScore(30), 'Low', 'earlier 0-100 score 30'); eq(ANCR.normScore(40), 'Moderate', 'earlier 0-100 score 40'); eq(ANCR.normScore(70), 'High', 'earlier 0-100 score 70');
+eq(ANCR.strongest(s.kjs[0]), 'Source reliability; Argumentation; Assumptions', 'factors rated High');
+eq(ANCR.weakest(s.kjs[0]), 'Coverage; Complexity', 'factors rated Low');
+eq(ANCR.strongest(ANCR.emptyKJ()), '', 'nothing rated');
 
 var bytes = ANCR.buildWorkbook(s);
 eq(ANCR.readWorkbook(bytes), s, 'round trip (stored zip)');
