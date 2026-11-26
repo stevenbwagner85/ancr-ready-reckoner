@@ -4,7 +4,7 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); }
 function eq(a, b, m) { assert(JSON.stringify(a) === JSON.stringify(b), m + '\n  got  ' + JSON.stringify(a) + '\n  want ' + JSON.stringify(b)); }
 
 var s = ANCR.emptyState();
-s.meta = { title: 'Gulf diversification & "rivalry" <test>', analyst: 'Syndicate 5', date: '26 November 2026', marking: 'OFFICIAL' };
+s.meta = { title: 'Test assessment & "quotes" <tags>', analyst: 'Test team', date: '26 November 2026', marking: 'OFFICIAL' };
 s.kjs = [ANCR.emptyKJ(), ANCR.emptyKJ(), ANCR.emptyKJ()];
 s.kjs[0].statement = 'It is HIGHLY LIKELY that X will happen.\nSecond line with unicode: café – £100 😀';
 s.kjs[0].scores = { '1a': 0, '1b': 50, '1c': 70, '1d': 40, c1: 30, '2a': 80, '2b': 80, '2c': 50, c2: 60, '3a': 10, '3b': 30, c3: 20, overall: 100 };
