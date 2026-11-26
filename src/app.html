@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnCR ready reckoner</title>
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div id="marking-top" class="marking" hidden></div>
+
+<header class="bar">
+  <img class="bar-logo" src="__LOGO_WHITE__" alt="Brunel University of London">
+  <div class="bar-title">
+    <h1>Analytical Confidence Rating (AnCR) ready reckoner</h1>
+    <p>A structured aid for judging analytical confidence. Every rating is the analyst&rsquo;s judgement, not a calculation.</p>
+  </div>
+  <img class="bar-calss" src="__CALSS_WHITE__" alt="College of Arts, Law and Social Sciences">
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <button type="button" class="btn primary" id="btn-save">Save as Excel</button>
+    <button type="button" class="btn" id="btn-open">Open workbook</button>
+    <button type="button" class="btn" id="btn-clear">Start again</button>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<main class="page">
+  <section class="details" aria-labelledby="details-h">
+    <h2 id="details-h" class="visually-hidden">Assessment details</h2>
+    <label class="field wide"><span>Assessment title</span><input type="text" id="meta-title" maxlength="300" autocomplete="off"></label>
+    <label class="field"><span>Analyst or team</span><input type="text" id="meta-analyst" maxlength="300" autocomplete="off"></label>
+    <label class="field"><span>Date</span><input type="text" id="meta-date" maxlength="60" autocomplete="off" placeholder="e.g. 26 November 2026"></label>
+    <label class="field"><span>Protective marking (optional)</span><input type="text" id="meta-marking" maxlength="120" autocomplete="off"></label>
+  </section>
+
+  <details class="howto">
+    <summary>How to use this tool</summary>
+    <ol>
+      <li>Enter each key judgement on its own tab. You can add up to ten.</li>
+      <li>For each factor, move the slider between the two anchor statements. It moves in steps of 10 from 0 to 100. Record your reasoning in the notes.</li>
+      <li>Set the overall slider for each criterion, and the overall confidence, yourself. They are judgements, not averages. A score of 0 to 30 reads as Low, 40 to 60 as Moderate and 70 to 100 as High.</li>
+      <li>Use the ingredients and the writing frame at the foot of each tab to write the AnCR statement.</li>
+      <li>Choose <strong>Save as Excel</strong> to keep a workbook on your own drive. <strong>Open workbook</strong> reloads one, including after it has been edited in Excel.</li>
+    </ol>
+    <p>This file works offline and sends nothing anywhere. Your work is kept in this browser on this computer until you choose <strong>Start again</strong>.</p>
+  </details>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Key judgements"></div>
+  <div id="panel" role="tabpanel" tabindex="-1"></div>
+</main>
+
+<footer class="foot">Brunel University of London &middot; brunel.ac.uk</footer>
+<div id="marking-bottom" class="marking" hidden></div>
+<input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>
