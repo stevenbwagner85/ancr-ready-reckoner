@@ -15,7 +15,6 @@
   --rule: #D9D9D9;
   --track: #DDE2EA;
   --field: #6E7F96;
-  --thumb: 24px;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -107,62 +106,42 @@ textarea { resize: vertical; min-height: 40px; display: block; }
 .card > h3 { display: inline-block; background: var(--navy); color: #fff; font-size: 16px; padding: 7px 16px 7px 12px; }
 .card > .card-body { border-top: 3px solid var(--navy); }
 
-.row { display: grid; grid-template-columns: 250px minmax(0, 1fr) 96px; gap: 8px 20px; padding: 16px 12px; border-bottom: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 10px 20px; padding: 16px 12px; border-bottom: 1px solid var(--rule); }
 .row.roll { background: var(--pale); border-bottom: 0; }
-.row-head { min-width: 0; }
+.row-head { min-width: 0; grid-row: span 2; }
 .row-head .ref { display: inline-block; min-width: 26px; font-weight: bold; color: var(--charcoal); }
 .row-head strong { font-size: 15px; }
 .row-head .prompt { margin-top: 3px; font-size: 14px; }
-.scale { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 1.5fr) minmax(0, 1fr); gap: 4px 14px; align-items: start; min-width: 0; }
-.anchor { font-size: 13px; color: var(--navy); padding-top: 2px; }
-.anchor.high { text-align: right; }
-.anchor b { display: block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--charcoal); }
-.readout { text-align: center; }
-.readout output { display: block; font-size: 24px; font-weight: bold; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.readout output.unset { font-size: 13px; font-weight: normal; color: var(--charcoal); padding: 6px 0; }
-.readout .chip { margin-top: 6px; }
-.readout .btn { margin-top: 8px; }
-.notes { grid-column: 2 / -1; display: block; min-width: 0; }
+.row-head .clear { margin-top: 10px; }
+.notes { display: block; min-width: 0; }
 .notes > span { font-weight: normal; color: var(--charcoal); }
 
-/* slider */
-.slider { min-width: 0; }
-.zones { display: flex; margin: 0 calc(var(--thumb) / 2) 2px; font-size: 11px; font-weight: bold; text-align: center; }
-.zones span { border-bottom: 4px solid var(--navy); padding-bottom: 1px; }
-.zones span:nth-child(1) { width: 35%; border-color: #AFC3E0; }
-.zones span:nth-child(2) { width: 30%; border-color: var(--sky); border-left: 2px solid #fff; border-right: 2px solid #fff; }
-.zones span:nth-child(3) { width: 35%; }
-input[type=range] {
-  -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 30px; margin: 0; padding: 0;
-  background: transparent; cursor: pointer; --v: 50; --fill: var(--blue); --rest: var(--track);
+/* the three-way choice */
+.opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-width: 0; }
+.opt {
+  position: relative; display: block; cursor: pointer; background: #fff; color: var(--navy);
+  border: 1px solid var(--field); border-radius: 4px; padding: 9px 12px 10px;
 }
-input[type=range].unset { --fill: var(--track); }
-input[type=range]::-webkit-slider-runnable-track {
-  height: 12px; border-radius: 6px;
-  background: linear-gradient(to right, var(--fill) 0, var(--fill) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--v) / 100), var(--rest) 0);
+.opt input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.opt-name { display: block; font-weight: bold; font-size: 15px; }
+.opt-name::before {
+  content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%;
+  border: 2px solid var(--field); background: #fff; vertical-align: -1px;
 }
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; width: var(--thumb); height: var(--thumb); margin-top: -6px;
-  border-radius: 50%; background: var(--navy); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--navy);
-}
-input[type=range].unset::-webkit-slider-thumb { background: #fff; border: 2px dashed var(--field); box-shadow: none; }
-input[type=range]::-moz-range-track { height: 12px; border-radius: 6px; background: var(--rest); }
-input[type=range]::-moz-range-progress { height: 12px; border-radius: 6px; background: var(--fill); }
-input[type=range]::-moz-range-thumb {
-  width: 18px; height: 18px; border-radius: 50%; background: var(--navy); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--navy);
-}
-input[type=range].unset::-moz-range-thumb { background: #fff; border: 2px dashed var(--field); box-shadow: none; }
-.ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--charcoal); font-variant-numeric: tabular-nums; }
-.ticks span { width: var(--thumb); text-align: center; }
+.opt-desc { display: block; margin-top: 3px; font-size: 13px; }
+.opt:hover { border-color: var(--navy); }
+.opt:focus-within { outline: 3px solid var(--sky); outline-offset: 2px; }
+.opt.selected { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
+.opt.selected .opt-name::before { border-color: var(--navy); background: var(--navy); box-shadow: inset 0 0 0 2px #fff; }
+.opt.low.selected { background: var(--pale); }
+.row.roll .opt.low.selected { background: #fff; box-shadow: inset 0 0 0 2px var(--navy); }
+.opt.moderate.selected { background: var(--sky); }
+.opt.high.selected { background: var(--navy); color: #fff; }
+.opt.high.selected .opt-name::before { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 2px var(--navy); }
 
 /* overall block */
-.mirrors { padding: 14px 12px 6px; display: grid; grid-template-columns: 250px minmax(0, 1fr) 96px; gap: 10px 20px; align-items: center; }
+.mirrors { padding: 14px 12px 6px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 8px 20px; align-items: center; }
 .mirrors .m-name { font-weight: bold; }
-.mirrors .scale { align-items: center; }
-.mini { position: relative; height: 10px; border-radius: 5px; background: var(--track); margin: 6px calc(var(--thumb) / 2); }
-.mini i { position: absolute; top: -4px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: var(--navy); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--navy); }
-.mini.unset i { display: none; }
-.mirrors .m-chip { text-align: center; }
 .mirrors-note { padding: 0 12px 4px; font-size: 13px; color: var(--charcoal); }
 
 /* ingredients */
@@ -192,12 +171,9 @@ table.summary .kj-link { font: inherit; font-weight: bold; color: var(--navy); b
   .bar { gap: 20px; padding: 20px 16px; }
   .bar-calss { display: none; }
   .details { grid-template-columns: 1fr; }
-  .row, .mirrors { grid-template-columns: minmax(0, 1fr) 96px; }
-  .row-head { grid-column: 1 / -1; }
-  .notes { grid-column: 1 / -1; }
-  .mirrors .m-name { grid-column: 1 / -1; margin-bottom: -4px; }
-  .scale { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .scale .slider, .scale .mini { grid-column: 1 / -1; grid-row: 1; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .row-head { grid-row: auto; }
+  .mirrors { grid-template-columns: minmax(0, 1fr) auto; }
   .ing { grid-template-columns: 1fr; }
   .ing dt { border-bottom: 0; padding-bottom: 0; }
   .ing dd { padding-left: 12px; }
@@ -207,9 +183,7 @@ table.summary .kj-link { font: inherit; font-weight: bold; color: var(--navy); b
   .bar-logo { width: 52px; height: 52px; }
   .bar-title h1 { font-size: 18px; }
   .bar-title p { display: none; }
-  .row, .mirrors { grid-template-columns: minmax(0, 1fr); }
-  .readout { display: flex; align-items: center; gap: 10px; text-align: left; }
-  .readout .chip, .readout .btn { margin-top: 0; }
+  .opts { grid-template-columns: minmax(0, 1fr); }
   .status { margin-left: 0; width: 100%; text-align: left; }
 }
 @media print {
@@ -255,8 +229,8 @@ table.summary .kj-link { font: inherit; font-weight: bold; color: var(--navy); b
     <summary>How to use this tool</summary>
     <ol>
       <li>Enter each key judgement on its own tab. You can add up to ten.</li>
-      <li>For each factor, move the slider between the two anchor statements. It moves in steps of 10 from 0 to 100. Record your reasoning in the notes.</li>
-      <li>Set the overall slider for each criterion, and the overall confidence, yourself. They are judgements, not averages. A score of 0 to 30 reads as Low, 40 to 60 as Moderate and 70 to 100 as High.</li>
+      <li>For each factor, decide whether it is Low, Moderate or High. The statements on the Low and High options describe what each looks like. Record your reasoning in the notes.</li>
+      <li>Then rate each criterion as a whole, and your overall confidence. These are your judgements, not a tally of the ratings above. A rating always describes support for confidence, so High is always the favourable end.</li>
       <li>Use the ingredients and the writing frame at the foot of each tab to write the AnCR statement.</li>
       <li>Choose <strong>Save as Excel</strong> to keep a workbook on your own drive. <strong>Open workbook</strong> reloads one, including after it has been edited in Excel.</li>
     </ol>
@@ -279,7 +253,8 @@ var ANCR = (function () {
   'use strict';
 
   var MAX_KJ = 10;
-  var STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  var LEVELS = ['Low', 'Moderate', 'High'];
+  var MODERATE_DESC = 'Between the two: neither statement fully applies.';
 
   var TITLE = 'Analytical Confidence Rating (AnCR) ready reckoner';
   var SUBTITLE = 'A structured aid for judging analytical confidence. Every rating is the analyst’s judgement, not a calculation.';
@@ -307,7 +282,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Source base overall',
-        prompt: 'Taken together, how strong is the source base? Set this yourself; it is not an average.',
+        prompt: 'Taken together, how strong is the source base? This is your judgement, not a tally of the ratings above.',
         low: 'The source base is weak. There may be significant unknown unknowns.',
         high: 'The source base is strong.'
       },
@@ -332,7 +307,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Analysis overall',
-        prompt: 'Taken together, how strong is the analysis? Set this yourself; it is not an average.',
+        prompt: 'Taken together, how strong is the analysis? This is your judgement, not a tally of the ratings above.',
         low: 'The analysis is very weak.',
         high: 'The analysis is very strong.'
       },
@@ -353,7 +328,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Complexity and volatility overall',
-        prompt: 'Taken together, how far does the nature of the subject support confidence? A higher score means a more stable, simpler subject. Set this yourself; it is not an average.',
+        prompt: 'Taken together, how far does the nature of the subject support confidence? High means a stable, simpler subject. This is your judgement, not a tally of the ratings above.',
         low: 'A highly volatile and complex subject.',
         high: 'A stable, linear and straightforward subject.'
       },
@@ -365,21 +340,21 @@ var ANCR = (function () {
   var OVERALL = {
     id: 'overall',
     name: 'Overall analytical confidence',
-    prompt: 'Taken together, what is your overall confidence in this key judgement? Set this yourself; it is not an average.',
+    prompt: 'Taken together, what is your overall confidence in this key judgement? This is your judgement, not a tally of the ratings above.',
     low: 'Low confidence.',
+    mid: 'Moderate confidence.',
     high: 'High confidence.'
   };
 
   var HOW_TO = 'How to use this workbook. ' +
     '1. Enter each key judgement on its own sheet (KJ 1 to KJ ' + MAX_KJ + '). Leave unused sheets blank. ' +
-    '2. For each factor, choose a score from the list (0 to 100 in steps of 10) between the two anchor statements, and record your reasoning in the notes. ' +
-    '3. Set the overall score for each criterion, and the overall confidence, yourself. They are judgements, not averages. ' +
-    'A score of 0 to 30 reads as Low, 40 to 60 as Moderate and 70 to 100 as High. ' +
+    '2. For each factor, decide whether it is Low, Moderate or High and choose that rating from the list. The two statements beside it describe what Low and High look like. Record your reasoning in the notes. ' +
+    '3. Then rate each criterion as a whole, and your overall confidence. These are your judgements, not a tally of the ratings above. ' +
     '4. Use the ingredients and the writing frame at the foot of each sheet to write the AnCR statement. ' +
     'Cells outlined in blue are for you to complete. The rest of each sheet is protected, without a password, to keep the layout intact (Review > Unprotect Sheet).';
 
-  var KJ_HOW_TO = 'Choose each score from the list: 0 to 100 in steps of 10, where 0 matches the lower anchor and 100 the upper anchor. ' +
-    'Overall scores are your judgement, not an average: 0 to 30 is Low, 40 to 60 is Moderate, 70 to 100 is High. Cells outlined in blue are for you to complete.';
+  var KJ_HOW_TO = 'Choose Low, Moderate or High for every row from the list in the Rating column. The statements either side describe what Low and High look like. ' +
+    'A rating always describes support for confidence, so High is always the favourable end. Cells outlined in blue are for you to complete.';
 
   /* Every scored item, in sheet order. */
   var FACTORS = [];
@@ -390,18 +365,19 @@ var ANCR = (function () {
   });
   KEYS.push('overall');
 
-  function band(v) {
-    if (v === null || v === undefined || v === '') return '';
-    return v <= 30 ? 'Low' : (v <= 60 ? 'Moderate' : 'High');
-  }
-
+  /* A rating is 'Low', 'Moderate' or 'High', or null when no decision has been made.
+   * Numbers are accepted from the earlier 0 to 100 version of the tool. */
   function normScore(v) {
     if (v === null || v === undefined || v === '') return null;
-    var n = Number(v);
-    if (!isFinite(n)) return null;
-    n = Math.round(n / 10) * 10;
-    return Math.max(0, Math.min(100, n));
+    if (typeof v === 'number') return isFinite(v) ? (v <= 30 ? 'Low' : (v <= 60 ? 'Moderate' : 'High')) : null;
+    var t = String(v).trim().toLowerCase();
+    if (t === 'low') return 'Low';
+    if (t === 'moderate' || t === 'medium' || t === 'med') return 'Moderate';
+    if (t === 'high') return 'High';
+    if (/^\d+$/.test(t)) return normScore(Number(t));
+    return null;
   }
+  function band(v) { return normScore(v) || ''; }
 
   function emptyKJ() {
     var kj = { statement: '', scores: {}, notes: {}, ancr: '' };
@@ -451,20 +427,14 @@ var ANCR = (function () {
     return s;
   }
 
-  /* Factors sharing the highest (or lowest) score, e.g. "Coverage (80); Challenge (80)". */
-  function extremes(kj, pickMax) {
-    var vals = [];
-    FACTORS.forEach(function (f) { if (kj.scores[f.id] !== null) vals.push(kj.scores[f.id]); });
-    if (!vals.length) return '';
-    var target = pickMax ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
+  /* Names of the factors given a particular rating, e.g. "Coverage; Challenge". */
+  function rated(kj, level) {
     var out = [];
-    FACTORS.forEach(function (f) {
-      if (kj.scores[f.id] === target) out.push(f.name + ' (' + target + ')');
-    });
+    FACTORS.forEach(function (f) { if (kj.scores[f.id] === level) out.push(f.name); });
     return out.join('; ');
   }
-  function strongest(kj) { return extremes(kj, true); }
-  function weakest(kj) { return extremes(kj, false); }
+  function strongest(kj) { return rated(kj, 'High'); }
+  function weakest(kj) { return rated(kj, 'Low'); }
 
   var FRAME_TAIL = 'Confidence would increase if [further collection, corroboration or challenge]. ' +
     'It would decrease if [the assumption or indicator that would undermine the judgement].';
@@ -480,7 +450,7 @@ var ANCR = (function () {
   }
 
   return {
-    MAX_KJ: MAX_KJ, STEPS: STEPS, TITLE: TITLE, SUBTITLE: SUBTITLE,
+    MAX_KJ: MAX_KJ, LEVELS: LEVELS, MODERATE_DESC: MODERATE_DESC, TITLE: TITLE, SUBTITLE: SUBTITLE,
     CRITERIA: CRITERIA, OVERALL: OVERALL, FACTORS: FACTORS, KEYS: KEYS,
     HOW_TO: HOW_TO, KJ_HOW_TO: KJ_HOW_TO, FRAME_TAIL: FRAME_TAIL,
     band: band, normScore: normScore, emptyKJ: emptyKJ, emptyState: emptyState,
@@ -746,15 +716,15 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
  * buildWorkbook(state) returns the .xlsx bytes; with an empty state it is the
  * blank template. readWorkbook(bytes) recovers the state from a workbook that
  * was produced here, including after it has been edited and re-saved in Excel.
- * The workbook uses no macros and no ActiveX: scores are list dropdowns and the
- * "slider" is drawn with conditional formatting. */
+ * The workbook uses no macros and no ActiveX: each rating is chosen from a list
+ * and the choice is highlighted with conditional formatting. */
 (function (A) {
   'use strict';
 
   /* ---------- layout ---------- */
-  var COL = { ref: 1, factor: 2, low: 3, score: 4, track0: 5, high: 16, band: 17, notes: 18 };
-  var LAST_COL = 18;
-  var KJ_WIDTHS = [6, 34, 30, 8, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 30, 12, 50];
+  var COL = { ref: 1, factor: 2, low: 3, score: 4, ind0: 5, high: 8, notes: 9 };
+  var LAST_COL = 9;
+  var KJ_WIDTHS = [6, 36, 34, 13, 11, 11, 11, 34, 56];
   var SUM_WIDTHS = [26, 58, 14, 14, 16, 16, 70];
   var ROW = {
     banner: 1, title: 2, statement: 3, howto: 4, head: 5,
@@ -784,7 +754,7 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     mirror: 17, frame: 18, sumCell: 19, kjTag: 20, howto: 21, inputDate: 22, rollBlank: 23, sumText: 24
   };
   var NAVY = 'FF002A53', WHITE = 'FFFFFFFF', PALE = 'FFE3EAF6', SKY = 'FF51C1E1', LINK = 'FF0089CF',
-      GREY = 'FFD9D9D9', TRACK = 'FFEDEFF2', CHARCOAL = 'FF4A4A49';
+      GREY = 'FFD9D9D9', TRACK = 'FFEDEFF2', CHARCOAL = 'FF4A4A49', MUTED = 'FF7C8798';
 
   function stylesXml() {
     function font(sz, color, bold) {
@@ -809,7 +779,8 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       font(11, NAVY, true),       // 5
       font(12, NAVY, true),       // 6
       font(9, CHARCOAL, false),   // 7
-      font(11, WHITE, true)       // 8
+      font(11, WHITE, true),      // 8
+      font(8, MUTED, false)       // 9
     ];
     var fills = [
       '<fill><patternFill patternType="none"/></fill>',
@@ -845,13 +816,13 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       xf(8, 2, 0, null, 'center', false),         // 8 criterion heading
       xf(1, 0, 1, 'center', 'top', false),        // 9 ref
       xf(0, 0, 1, null, 'top', true),             // 10 text
-      xf(6, 5, 2, 'center', 'center', false, true), // 11 score
-      xf(0, 4, 3, null, 'center', false),         // 12 track
+      xf(5, 5, 2, 'center', 'center', false, true), // 11 rating
+      xf(9, 4, 3, 'center', 'center', false),     // 12 indicator
       xf(0, 4, 4, null, 'center', false),         // 13 track zone start
       xf(1, 0, 1, 'center', 'center', false),     // 14 band
       xf(0, 3, 1, null, 'top', true),             // 15 roll-up text
       xf(1, 3, 1, 'center', 'top', false),        // 16 roll-up ref
-      xf(6, 0, 1, 'center', 'center', false),     // 17 mirrored score
+      xf(5, 0, 1, 'center', 'center', false),     // 17 carried-down rating
       xf(0, 3, 1, null, 'top', true),             // 18 frame
       xf(0, 0, 1, 'center', 'top', true),         // 19 summary cell
       xf(5, 0, 0, 'right', 'center', false),      // 20 KJ tag
@@ -860,16 +831,16 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       xf(0, 3, 1, null, 'top', false),            // 23 roll-up blank
       xf(0, 0, 1, null, 'top', true)              // 24 summary text
     ];
-    function dxf(fillRgb, fontRgb, bold) {
-      return '<dxf>' + (fontRgb ? '<font>' + (bold ? '<b/>' : '') + '<color rgb="' + fontRgb + '"/></font>' : '') +
-        '<fill><patternFill><bgColor rgb="' + fillRgb + '"/></patternFill></fill></dxf>';
+    function dxf(fillRgb, fontRgb, outlined) {
+      return '<dxf><font><b/><color rgb="' + fontRgb + '"/></font>' +
+        '<fill><patternFill><bgColor rgb="' + fillRgb + '"/></patternFill></fill>' +
+        (outlined ? '<border><left style="thin"><color rgb="' + NAVY + '"/></left><right style="thin"><color rgb="' + NAVY + '"/></right>' +
+          '<top style="thin"><color rgb="' + NAVY + '"/></top><bottom style="thin"><color rgb="' + NAVY + '"/></bottom></border>' : '') + '</dxf>';
     }
     var dxfs = [
-      dxf(NAVY, null),           // 0 slider position
-      dxf(SKY, null),            // 1 filled part of the track
-      dxf(NAVY, WHITE, true),    // 2 High
-      dxf(SKY, NAVY, true),      // 3 Moderate
-      dxf(PALE, NAVY, true)      // 4 Low
+      dxf(NAVY, WHITE, false),   // 0 High
+      dxf(SKY, NAVY, true),      // 1 Moderate
+      dxf(PALE, NAVY, true)      // 2 Low
     ];
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
@@ -963,27 +934,19 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
   function spanWidth(widths, c1, c2) { var w = 0; for (var c = c1; c <= c2; c++) w += widths[c - 1]; return w; }
 
   /* ---------- formulas ---------- */
-  var STEP_LIST = '"' + A.STEPS.join(',') + '"';
-  function bandF(cell) {
-    return 'IF(' + cell + '="","",IF(' + cell + '<=30,"Low",IF(' + cell + '<=60,"Moderate","High")))';
-  }
-  var FACTOR_RANGE = (function () {
-    return A.CRITERIA.map(function (c) {
-      return ref(COL.score, KEY_ROW[c.factors[0].id]) + ':' + ref(COL.score, KEY_ROW[c.factors[c.factors.length - 1].id]);
-    }).join(',');
-  })();
-  function extremesF(fn) {
+  var LEVEL_LIST = '"' + A.LEVELS.join(',') + '"';
+  function blankF(cell) { return 'IF(' + cell + '="","",' + cell + ')'; }
+  function ratedF(level) {
     var parts = A.FACTORS.map(function (f) {
-      var cell = ref(COL.score, KEY_ROW[f.id]);
-      return 'IF(AND(' + cell + '<>"",' + cell + '=' + fn + '(' + FACTOR_RANGE + ')),"' + f.name + ' ("&' + cell + '&"); ","")';
+      return 'IF(' + ref(COL.score, KEY_ROW[f.id]) + '="' + level + '","' + f.name + '; ","")';
     }).join('&');
-    return 'IF(COUNT(' + FACTOR_RANGE + ')=0,"",LEFT(' + parts + ',LEN(' + parts + ')-2))';
+    return 'IF(LEN(' + parts + ')=0,"",LEFT(' + parts + ',LEN(' + parts + ')-2))';
   }
   function frameF() {
-    var bandCell = function (key) { return ref(COL.band, KEY_ROW[key]); };
-    var f = '"We have "&IF(' + bandCell('overall') + '="","[overall rating]",UPPER(' + bandCell('overall') + '))&" confidence in this judgement. "';
+    var cell = function (key) { return ref(COL.score, KEY_ROW[key]); };
+    var f = '"We have "&IF(' + cell('overall') + '="","[overall rating]",UPPER(' + cell('overall') + '))&" confidence in this judgement. "';
     A.CRITERIA.forEach(function (c) {
-      f += '&"' + c.frameSubject + '"&IF(' + bandCell(c.id) + '="","[rating]",UPPER(' + bandCell(c.id) + '))&" confidence because ' + c.frameHint + '. "';
+      f += '&"' + c.frameSubject + '"&IF(' + cell(c.id) + '="","[rating]",UPPER(' + cell(c.id) + '))&" confidence because ' + c.frameHint + '. "';
     });
     return f + '&"' + A.FRAME_TAIL + '"';
   }
@@ -1019,7 +982,7 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     function rule(text, dxf, pr) {
       return '<cfRule type="cellIs" dxfId="' + dxf + '" priority="' + pr + '" operator="equal"><formula>"' + text + '"</formula></cfRule>';
     }
-    return '<conditionalFormatting sqref="' + sqref + '">' + rule('High', 2, p) + rule('Moderate', 3, p + 1) + rule('Low', 4, p + 2) + '</conditionalFormatting>';
+    return '<conditionalFormatting sqref="' + sqref + '">' + rule('High', 0, p) + rule('Moderate', 1, p + 1) + rule('Low', 2, p + 2) + '</conditionalFormatting>';
   }
 
   function kjSheet(n, kj, isActive) {
@@ -1029,7 +992,7 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     sh.merge(1, ROW.banner, LAST_COL, ROW.banner, S.banner, { f: bannerF, v: kj.__marking });
     sh.heights[ROW.banner] = 20;
     sh.merge(1, ROW.title, COL.high, ROW.title, S.title, A.TITLE);
-    sh.merge(COL.band, ROW.title, LAST_COL, ROW.title, S.kjTag, 'Key judgement ' + n);
+    sh.set(LAST_COL, ROW.title, S.kjTag, 'Key judgement ' + n);
     sh.heights[ROW.title] = 28;
     sh.merge(1, ROW.statement, 2, ROW.statement, S.label, 'Key judgement ' + n);
     sh.merge(3, ROW.statement, LAST_COL, ROW.statement, S.input, clip(kj.statement));
@@ -1040,16 +1003,15 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     // column headings
     sh.set(COL.ref, ROW.head, S.head, 'Ref');
     sh.set(COL.factor, ROW.head, S.head, 'Factor');
-    sh.set(COL.low, ROW.head, S.head, 'Lower anchor (0)');
-    sh.set(COL.score, ROW.head, S.head, 'Score');
-    A.STEPS.forEach(function (v, i) { sh.set(COL.track0 + i, ROW.head, S.headScale, v); });
-    sh.set(COL.high, ROW.head, S.head, 'Upper anchor (100)');
-    sh.set(COL.band, ROW.head, S.head, 'Rating');
-    sh.set(COL.notes, ROW.head, S.head, 'Analyst’s notes');
+    sh.set(COL.low, ROW.head, S.head, 'Low looks like');
+    sh.set(COL.score, ROW.head, S.head, 'Rating');
+    sh.merge(COL.ind0, ROW.head, COL.ind0 + 2, ROW.head, S.head, 'Your choice');
+    sh.set(COL.high, ROW.head, S.head, 'High looks like');
+    sh.set(COL.notes, ROW.head, S.head, 'Analyst\u2019s notes');
     sh.heights[ROW.head] = 24;
 
-    function track(row, zoned) {
-      for (var i = 0; i < 11; i++) sh.set(COL.track0 + i, row, (zoned && (i === 4 || i === 7)) ? S.trackZone : S.track, null);
+    function indicator(row) {
+      A.LEVELS.forEach(function (level, i) { sh.set(COL.ind0 + i, row, S.track, level); });
     }
     function scoreRow(row, key, item, label, isRoll) {
       var note = clip(kj.notes[key]);
@@ -1057,12 +1019,10 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       sh.set(COL.factor, row, isRoll ? S.rollText : S.text, { rich: [[true, item.name + '\n'], [false, item.prompt]] });
       sh.set(COL.low, row, isRoll ? S.rollText : S.text, item.low);
       sh.set(COL.score, row, S.score, kj.scores[key]);
-      track(row, isRoll);
+      indicator(row);
       sh.set(COL.high, row, isRoll ? S.rollText : S.text, item.high);
-      if (isRoll) sh.set(COL.band, row, S.band, { f: bandF(ref(COL.score, row)), v: A.band(kj.scores[key]) });
-      else sh.set(COL.band, row, S.text, null);
       sh.set(COL.notes, row, S.input, note);
-      var n1 = Math.max(lines(item.name, W[1]) + lines(item.prompt, W[1]), lines(item.low, W[2]), lines(item.high, W[15]), lines(note, W[17]));
+      var n1 = Math.max(lines(item.name, W[1]) + lines(item.prompt, W[1]), lines(item.low, W[2]), lines(item.high, W[7]), lines(note, W[8]));
       sh.heights[row] = height(n1, 44);
     }
 
@@ -1079,13 +1039,11 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     sh.heights[ROW.overallHead] = 22;
     A.CRITERIA.forEach(function (crit, i) {
       r = ROW.mirror0 + i;
-      var src = ref(COL.score, KEY_ROW[crit.id]);
       sh.set(COL.ref, r, S.ref, String(crit.num));
       sh.merge(COL.factor, r, COL.low, r, S.text, crit.name + ' (carried down from above)');
-      sh.set(COL.score, r, S.mirror, { f: 'IF(' + src + '="","",' + src + ')', v: kj.scores[crit.id] === null ? '' : kj.scores[crit.id] });
-      track(r, true);
+      sh.set(COL.score, r, S.mirror, { f: blankF(ref(COL.score, KEY_ROW[crit.id])), v: kj.scores[crit.id] || '' });
+      indicator(r);
       sh.set(COL.high, r, S.text, null);
-      sh.set(COL.band, r, S.band, { f: bandF(ref(COL.score, r)), v: A.band(kj.scores[crit.id]) });
       sh.set(COL.notes, r, S.text, null);
       sh.heights[r] = 22;
     });
@@ -1100,28 +1058,28 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       sh.heights[row] = height(lines(text, spanWidth(W, 3, LAST_COL)), minH);
     }
     var ob = A.band(kj.scores.overall);
-    ing(ROW.ingOverall, 'Overall confidence', S.frame, { f: 'IF(' + ref(COL.band, ROW.overall) + '="","",' + ref(COL.band, ROW.overall) + ')', v: ob }, 18, ob);
-    ing(ROW.ingStrong, 'Strongest factors', S.frame, { f: extremesF('MAX'), v: A.strongest(kj) }, 18, '');
-    ing(ROW.ingWeak, 'Weakest factors', S.frame, { f: extremesF('MIN'), v: A.weakest(kj) }, 18, '');
+    ing(ROW.ingOverall, 'Overall confidence', S.frame, { f: blankF(ref(COL.score, ROW.overall)), v: ob }, 18, ob);
+    ing(ROW.ingStrong, 'Strengths (factors rated High)', S.frame, { f: ratedF('High'), v: A.strongest(kj) }, 18, '');
+    ing(ROW.ingWeak, 'Weaknesses (factors rated Low)', S.frame, { f: ratedF('Low'), v: A.weakest(kj) }, 18, '');
     ing(ROW.ingFrame, 'Writing frame', S.frame, { f: frameF(), v: A.frame(kj) }, 58, A.frame(kj));
     ing(ROW.ancr, 'Your AnCR statement', S.input, clip(kj.ancr), 90, kj.ancr);
     sh.merge(1, ROW.bannerEnd, LAST_COL, ROW.bannerEnd, S.banner, { f: bannerF, v: kj.__marking });
     sh.heights[ROW.bannerEnd] = 20;
 
-    // conditional formatting: slider track and rating colours
-    var t0 = colName(COL.track0), t1 = colName(COL.track0 + 10), sc = '$' + colName(COL.score);
-    var first = KEY_ROW['1a'];
-    var cf = '<conditionalFormatting sqref="' + t0 + first + ':' + t1 + ROW.overall + '">' +
-      '<cfRule type="expression" dxfId="0" priority="1" stopIfTrue="1"><formula>' + esc('AND(ISNUMBER(' + sc + first + '),(COLUMN()-' + COL.track0 + ')*10=' + sc + first + ')') + '</formula></cfRule>' +
-      '<cfRule type="expression" dxfId="1" priority="2"><formula>' + esc('AND(ISNUMBER(' + sc + first + '),(COLUMN()-' + COL.track0 + ')*10<' + sc + first + ')') + '</formula></cfRule>' +
-      '</conditionalFormatting>' +
-      bandCf(colName(COL.band) + first + ':' + colName(COL.band) + ROW.overall, 3);
+    // conditional formatting: highlight the chosen rating
+    var i0 = colName(COL.ind0), i2 = colName(COL.ind0 + 2), sc = '$' + colName(COL.score), first = KEY_ROW['1a'];
+    function pick(level, offset, dxfId, pr) {
+      return '<cfRule type="expression" dxfId="' + dxfId + '" priority="' + pr + '"><formula>' +
+        esc('AND(' + sc + first + '="' + level + '",COLUMN()=' + (COL.ind0 + offset) + ')') + '</formula></cfRule>';
+    }
+    var cf = '<conditionalFormatting sqref="' + i0 + first + ':' + i2 + ROW.overall + '">' +
+      pick('High', 2, 0, 1) + pick('Moderate', 1, 1, 2) + pick('Low', 0, 2, 3) + '</conditionalFormatting>';
 
     var scoreCells = A.KEYS.map(function (k) { return ref(COL.score, KEY_ROW[k]); }).join(' ');
     var dv = '<dataValidations count="1"><dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" ' +
-      'errorTitle="Score" error="Choose a score from 0 to 100 in steps of 10, or leave the cell blank." ' +
-      'promptTitle="Score" prompt="0 matches the lower anchor, 100 the upper anchor. Steps of 10." sqref="' + scoreCells + '">' +
-      '<formula1>' + esc(STEP_LIST) + '</formula1></dataValidation></dataValidations>';
+      'errorTitle="Rating" error="Choose Low, Moderate or High from the list, or leave the cell blank." ' +
+      'promptTitle="Rating" prompt="Choose Low, Moderate or High." sqref="' + scoreCells + '">' +
+      '<formula1>' + esc(LEVEL_LIST) + '</formula1></dataValidation></dataValidations>';
 
     return sheetXml({ sheet: sh, widths: W, freezeRow: ROW.head, activeCell: 'D7', active: isActive, cf: cf, dv: dv });
   }
@@ -1158,8 +1116,8 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       sh.set(1, r, S.ref, 'KJ ' + i);
       sh.set(2, r, S.sumText, { f: 'IF(' + st + '="","",' + st + ')', v: clip(kj.statement) });
       ['c1', 'c2', 'c3', 'overall'].forEach(function (k, j) {
-        var cell = q + '$' + colName(COL.band) + '$' + KEY_ROW[k];
-        sh.set(3 + j, r, S.sumCell, { f: 'IF($B' + r + '="","",' + cell + ')', v: has ? A.band(kj.scores[k]) : '' });
+        var cell = q + '$' + colName(COL.score) + '$' + KEY_ROW[k];
+        sh.set(3 + j, r, S.sumCell, { f: 'IF(OR($B' + r + '="",' + cell + '=""),"",' + cell + ')', v: has ? A.band(kj.scores[k]) : '' });
       });
       sh.set(7, r, S.sumText, { f: 'IF($B' + r + '="","",IF(' + an + '="","",' + an + '))', v: has ? clip(kj.ancr) : '' });
       sh.heights[r] = height(Math.max(lines(kj.statement, W[1]), has ? lines(kj.ancr, W[6]) : 1), 30);
@@ -1307,8 +1265,7 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
         kj.statement = asText(cells[ref(3, ROW.statement)]);
         kj.ancr = asText(cells[ref(3, ROW.ancr)]);
         A.KEYS.forEach(function (k) {
-          var v = cells[ref(COL.score, KEY_ROW[k])];
-          kj.scores[k] = (typeof v === 'number' || (typeof v === 'string' && /^\s*\d+\s*$/.test(v))) ? A.normScore(v) : null;
+          kj.scores[k] = A.normScore(cells[ref(COL.score, KEY_ROW[k])]);
           kj.notes[k] = asText(cells[ref(COL.notes, KEY_ROW[k])]);
         });
       }
@@ -1471,35 +1428,24 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
   });
 
   /* ---------- key judgement panel ---------- */
-  function sliderRow(kj, key, item, refLabel, isRoll) {
-    var v = kj.scores[key], unset = v === null;
-    var range = h('input', {
-      type: 'range', min: '0', max: '100', step: '10', value: unset ? '50' : String(v),
-      class: unset ? 'unset' : null, 'data-score': key,
-      'aria-label': item.name + ' score, 0 to 100 in steps of 10'
-    });
-    range.style.setProperty('--v', unset ? 50 : v);
-    var slider = h('div', { class: 'slider' }, [
-      isRoll ? h('div', { class: 'zones', 'aria-hidden': 'true' }, [h('span', { text: 'Low' }), h('span', { text: 'Moderate' }), h('span', { text: 'High' })]) : null,
-      range,
-      h('div', { class: 'ticks', 'aria-hidden': 'true' }, A.STEPS.map(function (s) { return h('span', { text: String(s) }); }))
-    ]);
+  function ratingRow(kj, key, item, refLabel, isRoll) {
+    var v = kj.scores[key];
+    var opts = h('div', { class: 'opts', role: 'radiogroup', 'aria-label': item.name + ' rating' }, A.LEVELS.map(function (level) {
+      var desc = level === 'Low' ? item.low : (level === 'High' ? item.high : (item.mid || A.MODERATE_DESC));
+      var input = h('input', { type: 'radio', name: 'rate-' + key, value: level, 'data-score': key });
+      input.checked = v === level;
+      return h('label', { class: 'opt ' + level.toLowerCase() + (v === level ? ' selected' : '') }, [
+        input, h('span', { class: 'opt-name', text: level }), h('span', { class: 'opt-desc', text: desc })
+      ]);
+    }));
     return h('div', { class: 'row' + (isRoll ? ' roll' : ''), 'data-row': key }, [
       h('div', { class: 'row-head' }, [
         refLabel ? h('span', { class: 'ref', text: refLabel }) : null,
         h('strong', { text: item.name }),
-        h('p', { class: 'prompt', text: item.prompt })
+        h('p', { class: 'prompt', text: item.prompt }),
+        h('button', { type: 'button', class: 'btn small clear', 'data-clear': key, hidden: v === null, text: 'Clear rating', 'aria-label': 'Clear ' + item.name + ' rating' })
       ]),
-      h('div', { class: 'scale' }, [
-        h('p', { class: 'anchor low' }, [h('b', { text: 'At 0' }), item.low]),
-        slider,
-        h('p', { class: 'anchor high' }, [h('b', { text: 'At 100' }), item.high])
-      ]),
-      h('div', { class: 'readout' }, [
-        h('output', { class: unset ? 'unset' : null, 'data-out': key, text: unset ? 'Not set' : String(v) }),
-        isRoll ? (function () { var c = chip(A.band(v), 'js-band'); c.hidden = unset; return c; })() : null,
-        h('button', { type: 'button', class: 'btn small', 'data-clear': key, hidden: unset, text: 'Clear', 'aria-label': 'Clear ' + item.name + ' score' })
-      ]),
+      opts,
       h('label', { class: 'notes' }, [
         h('span', { text: isRoll ? 'Notes: why this rating?' : 'Notes' }),
         h('textarea', { rows: '2', maxlength: '8000', 'data-note': key, text: kj.notes[key] })
@@ -1520,15 +1466,14 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
 
     A.CRITERIA.forEach(function (c) {
       var body = h('div', { class: 'card-body' });
-      c.factors.forEach(function (f) { body.appendChild(sliderRow(kj, f.id, f, f.id, false)); });
-      body.appendChild(sliderRow(kj, c.id, c.rollup, '', true));
+      c.factors.forEach(function (f) { body.appendChild(ratingRow(kj, f.id, f, f.id, false)); });
+      body.appendChild(ratingRow(kj, c.id, c.rollup, '', true));
       frag.appendChild(h('section', { class: 'card' }, [h('h3', { text: 'Criterion ' + c.num + ': ' + c.name }), body]));
     });
 
     var mirrors = h('div', { class: 'mirrors' });
     A.CRITERIA.forEach(function (c) {
       mirrors.appendChild(h('div', { class: 'm-name', text: c.name }));
-      mirrors.appendChild(h('div', { class: 'scale' }, [h('span'), h('div', { class: 'mini', 'data-mini': c.id }, [h('i')]), h('span')]));
       mirrors.appendChild(h('div', { class: 'm-chip', 'data-mchip': c.id }));
     });
     frag.appendChild(h('section', { class: 'card' }, [
@@ -1536,7 +1481,7 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       h('div', { class: 'card-body' }, [
         mirrors,
         h('p', { class: 'mirrors-note', text: 'Your three criterion ratings, carried down for reference.' }),
-        sliderRow(kj, 'overall', A.OVERALL, '', true)
+        ratingRow(kj, 'overall', A.OVERALL, '', true)
       ])
     ]));
 
@@ -1545,8 +1490,8 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       h('div', { class: 'card-body' }, [
         h('dl', { class: 'ing' }, [
           h('dt', { text: 'Overall confidence' }), h('dd', { 'data-ing': 'overall' }),
-          h('dt', { text: 'Strongest factors' }), h('dd', { 'data-ing': 'strong' }),
-          h('dt', { text: 'Weakest factors' }), h('dd', { 'data-ing': 'weak' }),
+          h('dt', { text: 'Strengths (factors rated High)' }), h('dd', { 'data-ing': 'strong' }),
+          h('dt', { text: 'Weaknesses (factors rated Low)' }), h('dd', { 'data-ing': 'weak' }),
           h('dt', { text: 'Writing frame' }), h('dd', null, [
             h('p', { class: 'frame', 'data-ing': 'frame' }),
             h('p', { class: 'frame-actions' }, [h('button', { type: 'button', class: 'btn small', id: 'btn-use-frame', text: 'Copy frame into my statement' })])
@@ -1570,9 +1515,6 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     var kj = state.kjs[active];
     A.CRITERIA.forEach(function (c) {
       var v = kj.scores[c.id];
-      var mini = panelEl.querySelector('[data-mini="' + c.id + '"]');
-      mini.className = 'mini' + (v === null ? ' unset' : '');
-      mini.firstChild.style.left = (v === null ? 50 : v) + '%';
       var holder = panelEl.querySelector('[data-mchip="' + c.id + '"]');
       holder.textContent = '';
       holder.appendChild(chip(A.band(v)));
@@ -1585,8 +1527,8 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     var ob = A.band(kj.scores.overall), dd = panelEl.querySelector('[data-ing="overall"]');
     dd.textContent = '';
     dd.appendChild(chip(ob));
-    put('strong', A.strongest(kj), 'Score the factors to see which are strongest.');
-    put('weak', A.weakest(kj), 'Score the factors to see which are weakest.');
+    put('strong', A.strongest(kj), 'No factor is rated High.');
+    put('weak', A.weakest(kj), 'No factor is rated Low.');
     put('frame', A.frame(kj), '');
   }
 
@@ -1594,21 +1536,12 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
     var kj = state.kjs[active];
     kj.scores[key] = v;
     var row = panelEl.querySelector('[data-row="' + key + '"]');
-    var range = row.querySelector('input[type=range]'), out = row.querySelector('output');
-    range.className = v === null ? 'unset' : '';
-    if (v === null) range.value = '50';
-    range.style.setProperty('--v', v === null ? 50 : v);
-    range.setAttribute('aria-valuetext', v === null ? 'Not set' : v + (row.querySelector('.js-band') ? ', ' + A.band(v) : ''));
-    out.textContent = v === null ? 'Not set' : String(v);
-    out.className = v === null ? 'unset' : '';
+    Array.prototype.forEach.call(row.querySelectorAll('.opt'), function (label) {
+      var input = label.querySelector('input'), on = input.value === v;
+      input.checked = on;
+      label.className = 'opt ' + input.value.toLowerCase() + (on ? ' selected' : '');
+    });
     row.querySelector('[data-clear]').hidden = v === null;
-    var band = row.querySelector('.js-band');
-    if (band) {
-      var b = A.band(v);
-      band.className = 'chip ' + (b ? b.toLowerCase() : 'none') + ' js-band';
-      band.textContent = b || 'Not set';
-      band.hidden = !b;
-    }
     refreshDerived();
     if (key === 'overall') renderTabs();
     changed();
@@ -1617,16 +1550,16 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
   panelEl.addEventListener('input', function (e) {
     var t = e.target, kj = state.kjs[active];
     if (active === 'summary' || !kj) return;
-    if (t.hasAttribute('data-score')) setScore(t.getAttribute('data-score'), A.normScore(t.value));
-    else if (t.hasAttribute('data-note')) { kj.notes[t.getAttribute('data-note')] = t.value; changed(); }
+    if (t.hasAttribute('data-note')) { kj.notes[t.getAttribute('data-note')] = t.value; changed(); }
     else if (t.hasAttribute('data-field')) { kj[t.getAttribute('data-field')] = t.value; changed(); }
   });
-  /* An untouched slider is "not set" rather than 50: a click or Space/Enter on it records its position. */
+  panelEl.addEventListener('change', function (e) {
+    var t = e.target;
+    if (active !== 'summary' && t.hasAttribute('data-score') && t.checked) setScore(t.getAttribute('data-score'), A.normScore(t.value));
+  });
   panelEl.addEventListener('click', function (e) {
     var t = e.target;
-    if (t.hasAttribute && t.hasAttribute('data-score') && t.classList.contains('unset')) {
-      setScore(t.getAttribute('data-score'), A.normScore(t.value));
-    } else if (t.hasAttribute && t.hasAttribute('data-clear')) {
+    if (t.hasAttribute && t.hasAttribute('data-clear')) {
       var key = t.getAttribute('data-clear');
       setScore(key, null);
       panelEl.querySelector('[data-score="' + key + '"]').focus();
@@ -1645,13 +1578,6 @@ ANCR.ASSETS = {logoNavy: "iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAAAAAXNSR0
       changed();
     } else if (t.hasAttribute && t.hasAttribute('data-goto')) {
       go(Number(t.getAttribute('data-goto')), true);
-    }
-  });
-  panelEl.addEventListener('keydown', function (e) {
-    var t = e.target;
-    if ((e.key === ' ' || e.key === 'Enter') && t.hasAttribute && t.hasAttribute('data-score') && t.classList.contains('unset')) {
-      e.preventDefault();
-      setScore(t.getAttribute('data-score'), A.normScore(t.value));
     }
   });
 

@@ -8,8 +8,8 @@ It replaces an Excel workbook that relied on ActiveX scroll bars, which only run
 
 | File | What it is |
 |---|---|
-| `ancr-ready-reckoner.html` | The tool as a single file with draggable sliders. Save it to a local or shared drive and open it in a browser. It works offline, installs nothing, and saves its results as an Excel workbook. |
-| `AnCR-ready-reckoner-template.xlsx` | The same assessment as a plain Excel workbook. No macros, no ActiveX. Scores are chosen from a list and drawn as a bar with conditional formatting. |
+| `ancr-ready-reckoner.html` | The tool as a single file. Save it to a local or shared drive and open it in a browser. It works offline, installs nothing, and saves its results as an Excel workbook. |
+| `AnCR-ready-reckoner-template.xlsx` | The same assessment as a plain Excel workbook. No macros, no ActiveX. Each rating is chosen from a list and the choice is highlighted with conditional formatting. |
 | `index.html` | The download page. |
 
 A workbook saved from the HTML tool has exactly the same layout as the template, because both are produced by the same code. It can be edited in Excel and opened again in the HTML tool.
@@ -20,11 +20,11 @@ A workbook saved from the HTML tool has exactly the same layout as the template,
 - Nine factors under three criteria:
   1. **Source base**: coverage, consistency, source reliability, background knowledge.
   2. **Analysis**: argumentation, assumptions, challenge.
-  3. **Complexity and volatility**: complexity, volatility. A higher score means a simpler, more stable subject.
-- Each factor is scored from 0 to 100 in steps of 10 between two anchor statements, with a notes box for the reasoning.
-- The analyst sets an overall score for each criterion and for the key judgement as a whole. **Nothing is averaged or calculated.**
-- An overall score of 0 to 30 reads as Low, 40 to 60 as Moderate and 70 to 100 as High.
-- Each key judgement ends with the ingredients for the statement: the ratings, the strongest and weakest factors, and a writing frame. The analyst writes the statement.
+  3. **Complexity and volatility**: complexity, volatility. High means a simpler, more stable subject.
+- Each factor is rated Low, Moderate or High. There is no numeric scale: the analyst has to decide where it stands. A statement describes what Low and High look like, and there is a notes box for the reasoning.
+- The analyst then rates each criterion as a whole, and the key judgement as a whole, in the same way. **Nothing is averaged, tallied or calculated.**
+- A rating always describes support for confidence, so High is always the favourable end.
+- Each key judgement ends with the ingredients for the statement: the ratings, the factors rated High and Low, and a writing frame. The analyst writes the statement.
 - An optional protective marking appears at the top and bottom of every tab and sheet.
 
 ## Using the HTML tool
@@ -55,7 +55,7 @@ The build needs Python 3 and either Node.js or macOS (it falls back to the JavaS
 
 | Source | Purpose |
 |---|---|
-| `src/model.js` | Criteria, factors, wording, rating bands, writing frame. Edit the wording here. |
+| `src/model.js` | Criteria, factors, wording, ratings, writing frame. Edit the wording here. |
 | `src/workbook.js` | Builds the workbook and reads one back. |
 | `src/zip.js` | Minimal ZIP reader and writer, so the tool needs no libraries. |
 | `src/app.html`, `src/app.css`, `src/app.js` | The HTML tool's interface. |
