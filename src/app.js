@@ -145,35 +145,24 @@
   });
 
   /* ---------- key judgement panel ---------- */
-  function sliderRow(kj, key, item, refLabel, isRoll) {
-    var v = kj.scores[key], unset = v === null;
-    var range = h('input', {
-      type: 'range', min: '0', max: '100', step: '10', value: unset ? '50' : String(v),
-      class: unset ? 'unset' : null, 'data-score': key,
-      'aria-label': item.name + ' score, 0 to 100 in steps of 10'
-    });
-    range.style.setProperty('--v', unset ? 50 : v);
-    var slider = h('div', { class: 'slider' }, [
-      isRoll ? h('div', { class: 'zones', 'aria-hidden': 'true' }, [h('span', { text: 'Low' }), h('span', { text: 'Moderate' }), h('span', { text: 'High' })]) : null,
-      range,
-      h('div', { class: 'ticks', 'aria-hidden': 'true' }, A.STEPS.map(function (s) { return h('span', { text: String(s) }); }))
-    ]);
+  function ratingRow(kj, key, item, refLabel, isRoll) {
+    var v = kj.scores[key];
+    var opts = h('div', { class: 'opts', role: 'radiogroup', 'aria-label': item.name + ' rating' }, A.LEVELS.map(function (level) {
+      var desc = level === 'Low' ? item.low : (level === 'High' ? item.high : (item.mid || A.MODERATE_DESC));
+      var input = h('input', { type: 'radio', name: 'rate-' + key, value: level, 'data-score': key });
+      input.checked = v === level;
+      return h('label', { class: 'opt ' + level.toLowerCase() + (v === level ? ' selected' : '') }, [
+        input, h('span', { class: 'opt-name', text: level }), h('span', { class: 'opt-desc', text: desc })
+      ]);
+    }));
     return h('div', { class: 'row' + (isRoll ? ' roll' : ''), 'data-row': key }, [
       h('div', { class: 'row-head' }, [
         refLabel ? h('span', { class: 'ref', text: refLabel }) : null,
         h('strong', { text: item.name }),
-        h('p', { class: 'prompt', text: item.prompt })
+        h('p', { class: 'prompt', text: item.prompt }),
+        h('button', { type: 'button', class: 'btn small clear', 'data-clear': key, hidden: v === null, text: 'Clear rating', 'aria-label': 'Clear ' + item.name + ' rating' })
       ]),
-      h('div', { class: 'scale' }, [
-        h('p', { class: 'anchor low' }, [h('b', { text: 'At 0' }), item.low]),
-        slider,
-        h('p', { class: 'anchor high' }, [h('b', { text: 'At 100' }), item.high])
-      ]),
-      h('div', { class: 'readout' }, [
-        h('output', { class: unset ? 'unset' : null, 'data-out': key, text: unset ? 'Not set' : String(v) }),
-        isRoll ? (function () { var c = chip(A.band(v), 'js-band'); c.hidden = unset; return c; })() : null,
-        h('button', { type: 'button', class: 'btn small', 'data-clear': key, hidden: unset, text: 'Clear', 'aria-label': 'Clear ' + item.name + ' score' })
-      ]),
+      opts,
       h('label', { class: 'notes' }, [
         h('span', { text: isRoll ? 'Notes: why this rating?' : 'Notes' }),
         h('textarea', { rows: '2', maxlength: '8000', 'data-note': key, text: kj.notes[key] })
@@ -194,15 +183,14 @@
 
     A.CRITERIA.forEach(function (c) {
       var body = h('div', { class: 'card-body' });
-      c.factors.forEach(function (f) { body.appendChild(sliderRow(kj, f.id, f, f.id, false)); });
-      body.appendChild(sliderRow(kj, c.id, c.rollup, '', true));
+      c.factors.forEach(function (f) { body.appendChild(ratingRow(kj, f.id, f, f.id, false)); });
+      body.appendChild(ratingRow(kj, c.id, c.rollup, '', true));
       frag.appendChild(h('section', { class: 'card' }, [h('h3', { text: 'Criterion ' + c.num + ': ' + c.name }), body]));
     });
 
     var mirrors = h('div', { class: 'mirrors' });
     A.CRITERIA.forEach(function (c) {
       mirrors.appendChild(h('div', { class: 'm-name', text: c.name }));
-      mirrors.appendChild(h('div', { class: 'scale' }, [h('span'), h('div', { class: 'mini', 'data-mini': c.id }, [h('i')]), h('span')]));
       mirrors.appendChild(h('div', { class: 'm-chip', 'data-mchip': c.id }));
     });
     frag.appendChild(h('section', { class: 'card' }, [
@@ -210,7 +198,7 @@
       h('div', { class: 'card-body' }, [
         mirrors,
         h('p', { class: 'mirrors-note', text: 'Your three criterion ratings, carried down for reference.' }),
-        sliderRow(kj, 'overall', A.OVERALL, '', true)
+        ratingRow(kj, 'overall', A.OVERALL, '', true)
       ])
     ]));
 
@@ -219,8 +207,8 @@
       h('div', { class: 'card-body' }, [
         h('dl', { class: 'ing' }, [
           h('dt', { text: 'Overall confidence' }), h('dd', { 'data-ing': 'overall' }),
-          h('dt', { text: 'Strongest factors' }), h('dd', { 'data-ing': 'strong' }),
-          h('dt', { text: 'Weakest factors' }), h('dd', { 'data-ing': 'weak' }),
+          h('dt', { text: 'Strengths (factors rated High)' }), h('dd', { 'data-ing': 'strong' }),
+          h('dt', { text: 'Weaknesses (factors rated Low)' }), h('dd', { 'data-ing': 'weak' }),
           h('dt', { text: 'Writing frame' }), h('dd', null, [
             h('p', { class: 'frame', 'data-ing': 'frame' }),
             h('p', { class: 'frame-actions' }, [h('button', { type: 'button', class: 'btn small', id: 'btn-use-frame', text: 'Copy frame into my statement' })])
@@ -244,9 +232,6 @@
     var kj = state.kjs[active];
     A.CRITERIA.forEach(function (c) {
       var v = kj.scores[c.id];
-      var mini = panelEl.querySelector('[data-mini="' + c.id + '"]');
-      mini.className = 'mini' + (v === null ? ' unset' : '');
-      mini.firstChild.style.left = (v === null ? 50 : v) + '%';
       var holder = panelEl.querySelector('[data-mchip="' + c.id + '"]');
       holder.textContent = '';
       holder.appendChild(chip(A.band(v)));
@@ -259,8 +244,8 @@
     var ob = A.band(kj.scores.overall), dd = panelEl.querySelector('[data-ing="overall"]');
     dd.textContent = '';
     dd.appendChild(chip(ob));
-    put('strong', A.strongest(kj), 'Score the factors to see which are strongest.');
-    put('weak', A.weakest(kj), 'Score the factors to see which are weakest.');
+    put('strong', A.strongest(kj), 'No factor is rated High.');
+    put('weak', A.weakest(kj), 'No factor is rated Low.');
     put('frame', A.frame(kj), '');
   }
 
@@ -268,21 +253,12 @@
     var kj = state.kjs[active];
     kj.scores[key] = v;
     var row = panelEl.querySelector('[data-row="' + key + '"]');
-    var range = row.querySelector('input[type=range]'), out = row.querySelector('output');
-    range.className = v === null ? 'unset' : '';
-    if (v === null) range.value = '50';
-    range.style.setProperty('--v', v === null ? 50 : v);
-    range.setAttribute('aria-valuetext', v === null ? 'Not set' : v + (row.querySelector('.js-band') ? ', ' + A.band(v) : ''));
-    out.textContent = v === null ? 'Not set' : String(v);
-    out.className = v === null ? 'unset' : '';
+    Array.prototype.forEach.call(row.querySelectorAll('.opt'), function (label) {
+      var input = label.querySelector('input'), on = input.value === v;
+      input.checked = on;
+      label.className = 'opt ' + input.value.toLowerCase() + (on ? ' selected' : '');
+    });
     row.querySelector('[data-clear]').hidden = v === null;
-    var band = row.querySelector('.js-band');
-    if (band) {
-      var b = A.band(v);
-      band.className = 'chip ' + (b ? b.toLowerCase() : 'none') + ' js-band';
-      band.textContent = b || 'Not set';
-      band.hidden = !b;
-    }
     refreshDerived();
     if (key === 'overall') renderTabs();
     changed();
@@ -291,16 +267,16 @@
   panelEl.addEventListener('input', function (e) {
     var t = e.target, kj = state.kjs[active];
     if (active === 'summary' || !kj) return;
-    if (t.hasAttribute('data-score')) setScore(t.getAttribute('data-score'), A.normScore(t.value));
-    else if (t.hasAttribute('data-note')) { kj.notes[t.getAttribute('data-note')] = t.value; changed(); }
+    if (t.hasAttribute('data-note')) { kj.notes[t.getAttribute('data-note')] = t.value; changed(); }
     else if (t.hasAttribute('data-field')) { kj[t.getAttribute('data-field')] = t.value; changed(); }
   });
-  /* An untouched slider is "not set" rather than 50: a click or Space/Enter on it records its position. */
+  panelEl.addEventListener('change', function (e) {
+    var t = e.target;
+    if (active !== 'summary' && t.hasAttribute('data-score') && t.checked) setScore(t.getAttribute('data-score'), A.normScore(t.value));
+  });
   panelEl.addEventListener('click', function (e) {
     var t = e.target;
-    if (t.hasAttribute && t.hasAttribute('data-score') && t.classList.contains('unset')) {
-      setScore(t.getAttribute('data-score'), A.normScore(t.value));
-    } else if (t.hasAttribute && t.hasAttribute('data-clear')) {
+    if (t.hasAttribute && t.hasAttribute('data-clear')) {
       var key = t.getAttribute('data-clear');
       setScore(key, null);
       panelEl.querySelector('[data-score="' + key + '"]').focus();
@@ -319,13 +295,6 @@
       changed();
     } else if (t.hasAttribute && t.hasAttribute('data-goto')) {
       go(Number(t.getAttribute('data-goto')), true);
-    }
-  });
-  panelEl.addEventListener('keydown', function (e) {
-    var t = e.target;
-    if ((e.key === ' ' || e.key === 'Enter') && t.hasAttribute && t.hasAttribute('data-score') && t.classList.contains('unset')) {
-      e.preventDefault();
-      setScore(t.getAttribute('data-score'), A.normScore(t.value));
     }
   });
 

@@ -5,7 +5,8 @@ var ANCR = (function () {
   'use strict';
 
   var MAX_KJ = 10;
-  var STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  var LEVELS = ['Low', 'Moderate', 'High'];
+  var MODERATE_DESC = 'Between the two: neither statement fully applies.';
 
   var TITLE = 'Analytical Confidence Rating (AnCR) ready reckoner';
   var SUBTITLE = 'A structured aid for judging analytical confidence. Every rating is the analyst’s judgement, not a calculation.';
@@ -33,7 +34,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Source base overall',
-        prompt: 'Taken together, how strong is the source base? Set this yourself; it is not an average.',
+        prompt: 'Taken together, how strong is the source base? This is your judgement, not a tally of the ratings above.',
         low: 'The source base is weak. There may be significant unknown unknowns.',
         high: 'The source base is strong.'
       },
@@ -58,7 +59,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Analysis overall',
-        prompt: 'Taken together, how strong is the analysis? Set this yourself; it is not an average.',
+        prompt: 'Taken together, how strong is the analysis? This is your judgement, not a tally of the ratings above.',
         low: 'The analysis is very weak.',
         high: 'The analysis is very strong.'
       },
@@ -79,7 +80,7 @@ var ANCR = (function () {
       ],
       rollup: {
         name: 'Complexity and volatility overall',
-        prompt: 'Taken together, how far does the nature of the subject support confidence? A higher score means a more stable, simpler subject. Set this yourself; it is not an average.',
+        prompt: 'Taken together, how far does the nature of the subject support confidence? High means a stable, simpler subject. This is your judgement, not a tally of the ratings above.',
         low: 'A highly volatile and complex subject.',
         high: 'A stable, linear and straightforward subject.'
       },
@@ -91,21 +92,21 @@ var ANCR = (function () {
   var OVERALL = {
     id: 'overall',
     name: 'Overall analytical confidence',
-    prompt: 'Taken together, what is your overall confidence in this key judgement? Set this yourself; it is not an average.',
+    prompt: 'Taken together, what is your overall confidence in this key judgement? This is your judgement, not a tally of the ratings above.',
     low: 'Low confidence.',
+    mid: 'Moderate confidence.',
     high: 'High confidence.'
   };
 
   var HOW_TO = 'How to use this workbook. ' +
     '1. Enter each key judgement on its own sheet (KJ 1 to KJ ' + MAX_KJ + '). Leave unused sheets blank. ' +
-    '2. For each factor, choose a score from the list (0 to 100 in steps of 10) between the two anchor statements, and record your reasoning in the notes. ' +
-    '3. Set the overall score for each criterion, and the overall confidence, yourself. They are judgements, not averages. ' +
-    'A score of 0 to 30 reads as Low, 40 to 60 as Moderate and 70 to 100 as High. ' +
+    '2. For each factor, decide whether it is Low, Moderate or High and choose that rating from the list. The two statements beside it describe what Low and High look like. Record your reasoning in the notes. ' +
+    '3. Then rate each criterion as a whole, and your overall confidence. These are your judgements, not a tally of the ratings above. ' +
     '4. Use the ingredients and the writing frame at the foot of each sheet to write the AnCR statement. ' +
     'Cells outlined in blue are for you to complete. The rest of each sheet is protected, without a password, to keep the layout intact (Review > Unprotect Sheet).';
 
-  var KJ_HOW_TO = 'Choose each score from the list: 0 to 100 in steps of 10, where 0 matches the lower anchor and 100 the upper anchor. ' +
-    'Overall scores are your judgement, not an average: 0 to 30 is Low, 40 to 60 is Moderate, 70 to 100 is High. Cells outlined in blue are for you to complete.';
+  var KJ_HOW_TO = 'Choose Low, Moderate or High for every row from the list in the Rating column. The statements either side describe what Low and High look like. ' +
+    'A rating always describes support for confidence, so High is always the favourable end. Cells outlined in blue are for you to complete.';
 
   /* Every scored item, in sheet order. */
   var FACTORS = [];
@@ -116,18 +117,19 @@ var ANCR = (function () {
   });
   KEYS.push('overall');
 
-  function band(v) {
-    if (v === null || v === undefined || v === '') return '';
-    return v <= 30 ? 'Low' : (v <= 60 ? 'Moderate' : 'High');
-  }
-
+  /* A rating is 'Low', 'Moderate' or 'High', or null when no decision has been made.
+   * Numbers are accepted from the earlier 0 to 100 version of the tool. */
   function normScore(v) {
     if (v === null || v === undefined || v === '') return null;
-    var n = Number(v);
-    if (!isFinite(n)) return null;
-    n = Math.round(n / 10) * 10;
-    return Math.max(0, Math.min(100, n));
+    if (typeof v === 'number') return isFinite(v) ? (v <= 30 ? 'Low' : (v <= 60 ? 'Moderate' : 'High')) : null;
+    var t = String(v).trim().toLowerCase();
+    if (t === 'low') return 'Low';
+    if (t === 'moderate' || t === 'medium' || t === 'med') return 'Moderate';
+    if (t === 'high') return 'High';
+    if (/^\d+$/.test(t)) return normScore(Number(t));
+    return null;
   }
+  function band(v) { return normScore(v) || ''; }
 
   function emptyKJ() {
     var kj = { statement: '', scores: {}, notes: {}, ancr: '' };
@@ -177,20 +179,14 @@ var ANCR = (function () {
     return s;
   }
 
-  /* Factors sharing the highest (or lowest) score, e.g. "Coverage (80); Challenge (80)". */
-  function extremes(kj, pickMax) {
-    var vals = [];
-    FACTORS.forEach(function (f) { if (kj.scores[f.id] !== null) vals.push(kj.scores[f.id]); });
-    if (!vals.length) return '';
-    var target = pickMax ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
+  /* Names of the factors given a particular rating, e.g. "Coverage; Challenge". */
+  function rated(kj, level) {
     var out = [];
-    FACTORS.forEach(function (f) {
-      if (kj.scores[f.id] === target) out.push(f.name + ' (' + target + ')');
-    });
+    FACTORS.forEach(function (f) { if (kj.scores[f.id] === level) out.push(f.name); });
     return out.join('; ');
   }
-  function strongest(kj) { return extremes(kj, true); }
-  function weakest(kj) { return extremes(kj, false); }
+  function strongest(kj) { return rated(kj, 'High'); }
+  function weakest(kj) { return rated(kj, 'Low'); }
 
   var FRAME_TAIL = 'Confidence would increase if [further collection, corroboration or challenge]. ' +
     'It would decrease if [the assumption or indicator that would undermine the judgement].';
@@ -206,7 +202,7 @@ var ANCR = (function () {
   }
 
   return {
-    MAX_KJ: MAX_KJ, STEPS: STEPS, TITLE: TITLE, SUBTITLE: SUBTITLE,
+    MAX_KJ: MAX_KJ, LEVELS: LEVELS, MODERATE_DESC: MODERATE_DESC, TITLE: TITLE, SUBTITLE: SUBTITLE,
     CRITERIA: CRITERIA, OVERALL: OVERALL, FACTORS: FACTORS, KEYS: KEYS,
     HOW_TO: HOW_TO, KJ_HOW_TO: KJ_HOW_TO, FRAME_TAIL: FRAME_TAIL,
     band: band, normScore: normScore, emptyKJ: emptyKJ, emptyState: emptyState,

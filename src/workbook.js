@@ -2,15 +2,15 @@
  * buildWorkbook(state) returns the .xlsx bytes; with an empty state it is the
  * blank template. readWorkbook(bytes) recovers the state from a workbook that
  * was produced here, including after it has been edited and re-saved in Excel.
- * The workbook uses no macros and no ActiveX: scores are list dropdowns and the
- * "slider" is drawn with conditional formatting. */
+ * The workbook uses no macros and no ActiveX: each rating is chosen from a list
+ * and the choice is highlighted with conditional formatting. */
 (function (A) {
   'use strict';
 
   /* ---------- layout ---------- */
-  var COL = { ref: 1, factor: 2, low: 3, score: 4, track0: 5, high: 16, band: 17, notes: 18 };
-  var LAST_COL = 18;
-  var KJ_WIDTHS = [6, 34, 30, 8, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 30, 12, 50];
+  var COL = { ref: 1, factor: 2, low: 3, score: 4, ind0: 5, high: 8, notes: 9 };
+  var LAST_COL = 9;
+  var KJ_WIDTHS = [6, 36, 34, 13, 11, 11, 11, 34, 56];
   var SUM_WIDTHS = [26, 58, 14, 14, 16, 16, 70];
   var ROW = {
     banner: 1, title: 2, statement: 3, howto: 4, head: 5,
@@ -40,7 +40,7 @@
     mirror: 17, frame: 18, sumCell: 19, kjTag: 20, howto: 21, inputDate: 22, rollBlank: 23, sumText: 24
   };
   var NAVY = 'FF002A53', WHITE = 'FFFFFFFF', PALE = 'FFE3EAF6', SKY = 'FF51C1E1', LINK = 'FF0089CF',
-      GREY = 'FFD9D9D9', TRACK = 'FFEDEFF2', CHARCOAL = 'FF4A4A49';
+      GREY = 'FFD9D9D9', TRACK = 'FFEDEFF2', CHARCOAL = 'FF4A4A49', MUTED = 'FF7C8798';
 
   function stylesXml() {
     function font(sz, color, bold) {
@@ -65,7 +65,8 @@
       font(11, NAVY, true),       // 5
       font(12, NAVY, true),       // 6
       font(9, CHARCOAL, false),   // 7
-      font(11, WHITE, true)       // 8
+      font(11, WHITE, true),      // 8
+      font(8, MUTED, false)       // 9
     ];
     var fills = [
       '<fill><patternFill patternType="none"/></fill>',
@@ -101,13 +102,13 @@
       xf(8, 2, 0, null, 'center', false),         // 8 criterion heading
       xf(1, 0, 1, 'center', 'top', false),        // 9 ref
       xf(0, 0, 1, null, 'top', true),             // 10 text
-      xf(6, 5, 2, 'center', 'center', false, true), // 11 score
-      xf(0, 4, 3, null, 'center', false),         // 12 track
+      xf(5, 5, 2, 'center', 'center', false, true), // 11 rating
+      xf(9, 4, 3, 'center', 'center', false),     // 12 indicator
       xf(0, 4, 4, null, 'center', false),         // 13 track zone start
       xf(1, 0, 1, 'center', 'center', false),     // 14 band
       xf(0, 3, 1, null, 'top', true),             // 15 roll-up text
       xf(1, 3, 1, 'center', 'top', false),        // 16 roll-up ref
-      xf(6, 0, 1, 'center', 'center', false),     // 17 mirrored score
+      xf(5, 0, 1, 'center', 'center', false),     // 17 carried-down rating
       xf(0, 3, 1, null, 'top', true),             // 18 frame
       xf(0, 0, 1, 'center', 'top', true),         // 19 summary cell
       xf(5, 0, 0, 'right', 'center', false),      // 20 KJ tag
@@ -116,16 +117,16 @@
       xf(0, 3, 1, null, 'top', false),            // 23 roll-up blank
       xf(0, 0, 1, null, 'top', true)              // 24 summary text
     ];
-    function dxf(fillRgb, fontRgb, bold) {
-      return '<dxf>' + (fontRgb ? '<font>' + (bold ? '<b/>' : '') + '<color rgb="' + fontRgb + '"/></font>' : '') +
-        '<fill><patternFill><bgColor rgb="' + fillRgb + '"/></patternFill></fill></dxf>';
+    function dxf(fillRgb, fontRgb, outlined) {
+      return '<dxf><font><b/><color rgb="' + fontRgb + '"/></font>' +
+        '<fill><patternFill><bgColor rgb="' + fillRgb + '"/></patternFill></fill>' +
+        (outlined ? '<border><left style="thin"><color rgb="' + NAVY + '"/></left><right style="thin"><color rgb="' + NAVY + '"/></right>' +
+          '<top style="thin"><color rgb="' + NAVY + '"/></top><bottom style="thin"><color rgb="' + NAVY + '"/></bottom></border>' : '') + '</dxf>';
     }
     var dxfs = [
-      dxf(NAVY, null),           // 0 slider position
-      dxf(SKY, null),            // 1 filled part of the track
-      dxf(NAVY, WHITE, true),    // 2 High
-      dxf(SKY, NAVY, true),      // 3 Moderate
-      dxf(PALE, NAVY, true)      // 4 Low
+      dxf(NAVY, WHITE, false),   // 0 High
+      dxf(SKY, NAVY, true),      // 1 Moderate
+      dxf(PALE, NAVY, true)      // 2 Low
     ];
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
@@ -219,27 +220,19 @@
   function spanWidth(widths, c1, c2) { var w = 0; for (var c = c1; c <= c2; c++) w += widths[c - 1]; return w; }
 
   /* ---------- formulas ---------- */
-  var STEP_LIST = '"' + A.STEPS.join(',') + '"';
-  function bandF(cell) {
-    return 'IF(' + cell + '="","",IF(' + cell + '<=30,"Low",IF(' + cell + '<=60,"Moderate","High")))';
-  }
-  var FACTOR_RANGE = (function () {
-    return A.CRITERIA.map(function (c) {
-      return ref(COL.score, KEY_ROW[c.factors[0].id]) + ':' + ref(COL.score, KEY_ROW[c.factors[c.factors.length - 1].id]);
-    }).join(',');
-  })();
-  function extremesF(fn) {
+  var LEVEL_LIST = '"' + A.LEVELS.join(',') + '"';
+  function blankF(cell) { return 'IF(' + cell + '="","",' + cell + ')'; }
+  function ratedF(level) {
     var parts = A.FACTORS.map(function (f) {
-      var cell = ref(COL.score, KEY_ROW[f.id]);
-      return 'IF(AND(' + cell + '<>"",' + cell + '=' + fn + '(' + FACTOR_RANGE + ')),"' + f.name + ' ("&' + cell + '&"); ","")';
+      return 'IF(' + ref(COL.score, KEY_ROW[f.id]) + '="' + level + '","' + f.name + '; ","")';
     }).join('&');
-    return 'IF(COUNT(' + FACTOR_RANGE + ')=0,"",LEFT(' + parts + ',LEN(' + parts + ')-2))';
+    return 'IF(LEN(' + parts + ')=0,"",LEFT(' + parts + ',LEN(' + parts + ')-2))';
   }
   function frameF() {
-    var bandCell = function (key) { return ref(COL.band, KEY_ROW[key]); };
-    var f = '"We have "&IF(' + bandCell('overall') + '="","[overall rating]",UPPER(' + bandCell('overall') + '))&" confidence in this judgement. "';
+    var cell = function (key) { return ref(COL.score, KEY_ROW[key]); };
+    var f = '"We have "&IF(' + cell('overall') + '="","[overall rating]",UPPER(' + cell('overall') + '))&" confidence in this judgement. "';
     A.CRITERIA.forEach(function (c) {
-      f += '&"' + c.frameSubject + '"&IF(' + bandCell(c.id) + '="","[rating]",UPPER(' + bandCell(c.id) + '))&" confidence because ' + c.frameHint + '. "';
+      f += '&"' + c.frameSubject + '"&IF(' + cell(c.id) + '="","[rating]",UPPER(' + cell(c.id) + '))&" confidence because ' + c.frameHint + '. "';
     });
     return f + '&"' + A.FRAME_TAIL + '"';
   }
@@ -275,7 +268,7 @@
     function rule(text, dxf, pr) {
       return '<cfRule type="cellIs" dxfId="' + dxf + '" priority="' + pr + '" operator="equal"><formula>"' + text + '"</formula></cfRule>';
     }
-    return '<conditionalFormatting sqref="' + sqref + '">' + rule('High', 2, p) + rule('Moderate', 3, p + 1) + rule('Low', 4, p + 2) + '</conditionalFormatting>';
+    return '<conditionalFormatting sqref="' + sqref + '">' + rule('High', 0, p) + rule('Moderate', 1, p + 1) + rule('Low', 2, p + 2) + '</conditionalFormatting>';
   }
 
   function kjSheet(n, kj, isActive) {
@@ -285,7 +278,7 @@
     sh.merge(1, ROW.banner, LAST_COL, ROW.banner, S.banner, { f: bannerF, v: kj.__marking });
     sh.heights[ROW.banner] = 20;
     sh.merge(1, ROW.title, COL.high, ROW.title, S.title, A.TITLE);
-    sh.merge(COL.band, ROW.title, LAST_COL, ROW.title, S.kjTag, 'Key judgement ' + n);
+    sh.set(LAST_COL, ROW.title, S.kjTag, 'Key judgement ' + n);
     sh.heights[ROW.title] = 28;
     sh.merge(1, ROW.statement, 2, ROW.statement, S.label, 'Key judgement ' + n);
     sh.merge(3, ROW.statement, LAST_COL, ROW.statement, S.input, clip(kj.statement));
@@ -296,16 +289,15 @@
     // column headings
     sh.set(COL.ref, ROW.head, S.head, 'Ref');
     sh.set(COL.factor, ROW.head, S.head, 'Factor');
-    sh.set(COL.low, ROW.head, S.head, 'Lower anchor (0)');
-    sh.set(COL.score, ROW.head, S.head, 'Score');
-    A.STEPS.forEach(function (v, i) { sh.set(COL.track0 + i, ROW.head, S.headScale, v); });
-    sh.set(COL.high, ROW.head, S.head, 'Upper anchor (100)');
-    sh.set(COL.band, ROW.head, S.head, 'Rating');
-    sh.set(COL.notes, ROW.head, S.head, 'Analyst’s notes');
+    sh.set(COL.low, ROW.head, S.head, 'Low looks like');
+    sh.set(COL.score, ROW.head, S.head, 'Rating');
+    sh.merge(COL.ind0, ROW.head, COL.ind0 + 2, ROW.head, S.head, 'Your choice');
+    sh.set(COL.high, ROW.head, S.head, 'High looks like');
+    sh.set(COL.notes, ROW.head, S.head, 'Analyst\u2019s notes');
     sh.heights[ROW.head] = 24;
 
-    function track(row, zoned) {
-      for (var i = 0; i < 11; i++) sh.set(COL.track0 + i, row, (zoned && (i === 4 || i === 7)) ? S.trackZone : S.track, null);
+    function indicator(row) {
+      A.LEVELS.forEach(function (level, i) { sh.set(COL.ind0 + i, row, S.track, level); });
     }
     function scoreRow(row, key, item, label, isRoll) {
       var note = clip(kj.notes[key]);
@@ -313,12 +305,10 @@
       sh.set(COL.factor, row, isRoll ? S.rollText : S.text, { rich: [[true, item.name + '\n'], [false, item.prompt]] });
       sh.set(COL.low, row, isRoll ? S.rollText : S.text, item.low);
       sh.set(COL.score, row, S.score, kj.scores[key]);
-      track(row, isRoll);
+      indicator(row);
       sh.set(COL.high, row, isRoll ? S.rollText : S.text, item.high);
-      if (isRoll) sh.set(COL.band, row, S.band, { f: bandF(ref(COL.score, row)), v: A.band(kj.scores[key]) });
-      else sh.set(COL.band, row, S.text, null);
       sh.set(COL.notes, row, S.input, note);
-      var n1 = Math.max(lines(item.name, W[1]) + lines(item.prompt, W[1]), lines(item.low, W[2]), lines(item.high, W[15]), lines(note, W[17]));
+      var n1 = Math.max(lines(item.name, W[1]) + lines(item.prompt, W[1]), lines(item.low, W[2]), lines(item.high, W[7]), lines(note, W[8]));
       sh.heights[row] = height(n1, 44);
     }
 
@@ -335,13 +325,11 @@
     sh.heights[ROW.overallHead] = 22;
     A.CRITERIA.forEach(function (crit, i) {
       r = ROW.mirror0 + i;
-      var src = ref(COL.score, KEY_ROW[crit.id]);
       sh.set(COL.ref, r, S.ref, String(crit.num));
       sh.merge(COL.factor, r, COL.low, r, S.text, crit.name + ' (carried down from above)');
-      sh.set(COL.score, r, S.mirror, { f: 'IF(' + src + '="","",' + src + ')', v: kj.scores[crit.id] === null ? '' : kj.scores[crit.id] });
-      track(r, true);
+      sh.set(COL.score, r, S.mirror, { f: blankF(ref(COL.score, KEY_ROW[crit.id])), v: kj.scores[crit.id] || '' });
+      indicator(r);
       sh.set(COL.high, r, S.text, null);
-      sh.set(COL.band, r, S.band, { f: bandF(ref(COL.score, r)), v: A.band(kj.scores[crit.id]) });
       sh.set(COL.notes, r, S.text, null);
       sh.heights[r] = 22;
     });
@@ -356,28 +344,28 @@
       sh.heights[row] = height(lines(text, spanWidth(W, 3, LAST_COL)), minH);
     }
     var ob = A.band(kj.scores.overall);
-    ing(ROW.ingOverall, 'Overall confidence', S.frame, { f: 'IF(' + ref(COL.band, ROW.overall) + '="","",' + ref(COL.band, ROW.overall) + ')', v: ob }, 18, ob);
-    ing(ROW.ingStrong, 'Strongest factors', S.frame, { f: extremesF('MAX'), v: A.strongest(kj) }, 18, '');
-    ing(ROW.ingWeak, 'Weakest factors', S.frame, { f: extremesF('MIN'), v: A.weakest(kj) }, 18, '');
+    ing(ROW.ingOverall, 'Overall confidence', S.frame, { f: blankF(ref(COL.score, ROW.overall)), v: ob }, 18, ob);
+    ing(ROW.ingStrong, 'Strengths (factors rated High)', S.frame, { f: ratedF('High'), v: A.strongest(kj) }, 18, '');
+    ing(ROW.ingWeak, 'Weaknesses (factors rated Low)', S.frame, { f: ratedF('Low'), v: A.weakest(kj) }, 18, '');
     ing(ROW.ingFrame, 'Writing frame', S.frame, { f: frameF(), v: A.frame(kj) }, 58, A.frame(kj));
     ing(ROW.ancr, 'Your AnCR statement', S.input, clip(kj.ancr), 90, kj.ancr);
     sh.merge(1, ROW.bannerEnd, LAST_COL, ROW.bannerEnd, S.banner, { f: bannerF, v: kj.__marking });
     sh.heights[ROW.bannerEnd] = 20;
 
-    // conditional formatting: slider track and rating colours
-    var t0 = colName(COL.track0), t1 = colName(COL.track0 + 10), sc = '$' + colName(COL.score);
-    var first = KEY_ROW['1a'];
-    var cf = '<conditionalFormatting sqref="' + t0 + first + ':' + t1 + ROW.overall + '">' +
-      '<cfRule type="expression" dxfId="0" priority="1" stopIfTrue="1"><formula>' + esc('AND(ISNUMBER(' + sc + first + '),(COLUMN()-' + COL.track0 + ')*10=' + sc + first + ')') + '</formula></cfRule>' +
-      '<cfRule type="expression" dxfId="1" priority="2"><formula>' + esc('AND(ISNUMBER(' + sc + first + '),(COLUMN()-' + COL.track0 + ')*10<' + sc + first + ')') + '</formula></cfRule>' +
-      '</conditionalFormatting>' +
-      bandCf(colName(COL.band) + first + ':' + colName(COL.band) + ROW.overall, 3);
+    // conditional formatting: highlight the chosen rating
+    var i0 = colName(COL.ind0), i2 = colName(COL.ind0 + 2), sc = '$' + colName(COL.score), first = KEY_ROW['1a'];
+    function pick(level, offset, dxfId, pr) {
+      return '<cfRule type="expression" dxfId="' + dxfId + '" priority="' + pr + '"><formula>' +
+        esc('AND(' + sc + first + '="' + level + '",COLUMN()=' + (COL.ind0 + offset) + ')') + '</formula></cfRule>';
+    }
+    var cf = '<conditionalFormatting sqref="' + i0 + first + ':' + i2 + ROW.overall + '">' +
+      pick('High', 2, 0, 1) + pick('Moderate', 1, 1, 2) + pick('Low', 0, 2, 3) + '</conditionalFormatting>';
 
     var scoreCells = A.KEYS.map(function (k) { return ref(COL.score, KEY_ROW[k]); }).join(' ');
     var dv = '<dataValidations count="1"><dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" ' +
-      'errorTitle="Score" error="Choose a score from 0 to 100 in steps of 10, or leave the cell blank." ' +
-      'promptTitle="Score" prompt="0 matches the lower anchor, 100 the upper anchor. Steps of 10." sqref="' + scoreCells + '">' +
-      '<formula1>' + esc(STEP_LIST) + '</formula1></dataValidation></dataValidations>';
+      'errorTitle="Rating" error="Choose Low, Moderate or High from the list, or leave the cell blank." ' +
+      'promptTitle="Rating" prompt="Choose Low, Moderate or High." sqref="' + scoreCells + '">' +
+      '<formula1>' + esc(LEVEL_LIST) + '</formula1></dataValidation></dataValidations>';
 
     return sheetXml({ sheet: sh, widths: W, freezeRow: ROW.head, activeCell: 'D7', active: isActive, cf: cf, dv: dv });
   }
@@ -414,8 +402,8 @@
       sh.set(1, r, S.ref, 'KJ ' + i);
       sh.set(2, r, S.sumText, { f: 'IF(' + st + '="","",' + st + ')', v: clip(kj.statement) });
       ['c1', 'c2', 'c3', 'overall'].forEach(function (k, j) {
-        var cell = q + '$' + colName(COL.band) + '$' + KEY_ROW[k];
-        sh.set(3 + j, r, S.sumCell, { f: 'IF($B' + r + '="","",' + cell + ')', v: has ? A.band(kj.scores[k]) : '' });
+        var cell = q + '$' + colName(COL.score) + '$' + KEY_ROW[k];
+        sh.set(3 + j, r, S.sumCell, { f: 'IF(OR($B' + r + '="",' + cell + '=""),"",' + cell + ')', v: has ? A.band(kj.scores[k]) : '' });
       });
       sh.set(7, r, S.sumText, { f: 'IF($B' + r + '="","",IF(' + an + '="","",' + an + '))', v: has ? clip(kj.ancr) : '' });
       sh.heights[r] = height(Math.max(lines(kj.statement, W[1]), has ? lines(kj.ancr, W[6]) : 1), 30);
@@ -563,8 +551,7 @@
         kj.statement = asText(cells[ref(3, ROW.statement)]);
         kj.ancr = asText(cells[ref(3, ROW.ancr)]);
         A.KEYS.forEach(function (k) {
-          var v = cells[ref(COL.score, KEY_ROW[k])];
-          kj.scores[k] = (typeof v === 'number' || (typeof v === 'string' && /^\s*\d+\s*$/.test(v))) ? A.normScore(v) : null;
+          kj.scores[k] = A.normScore(cells[ref(COL.score, KEY_ROW[k])]);
           kj.notes[k] = asText(cells[ref(COL.notes, KEY_ROW[k])]);
         });
       }
